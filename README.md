@@ -1,6 +1,6 @@
 # Monad Testnet Automation Scripts
 
-This repository contains a collection of Python scripts designed to automate various tasks on the Monad Testnet, including staking, swapping, deploying contracts, and sending transactions. The scripts are integrated with a central `main.py` file for easy navigation and execution, supporting multiple private keys and a user-friendly CLI interface.
+This repository contains a collection of Python scripts designed to automate various tasks on the Monad Testnet, including staking, swapping, deploying contracts, and sending transactions. The scripts are integrated with a central `main.py` file for easy navigation and execution, supporting multiple private keys and a user-friendly CLI interface
 
 ## Setup Instructions:
 
