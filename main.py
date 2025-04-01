@@ -3,7 +3,7 @@ import sys
 import importlib
 import inquirer
 import asyncio
-from scripts.apriori import get_quote
+# from scripts.apriori import get_quote
 from colorama import init, Fore, Style
 
 # Initialize colorama
@@ -63,7 +63,7 @@ def main():
     while True:
         _clear()
         _banner()
-        get_quote()
+        # get_quote()
         print_border("MAIN MENU", Fore.YELLOW)
 
         available_scripts = get_available_scripts()
@@ -90,8 +90,10 @@ def main():
         try:
             print(f"{Fore.CYAN}{'═' * BORDER_WIDTH}{Style.RESET_ALL}")
             print_border(f"RUNNING: {selected_script_name}", Fore.CYAN)
+
             script_module = importlib.import_module(f"scripts.{selected_script_value}")
             run_script(script_module)
+
             print(f"{Fore.GREEN}{'═' * BORDER_WIDTH}{Style.RESET_ALL}")
             print_border(f"Completed {selected_script_name}", Fore.GREEN)
             input(f"{Fore.YELLOW}⏎ Press Enter to continue...{Style.RESET_ALL:^76}")

@@ -265,15 +265,24 @@ async def perform_random_swap(private_key):
     token_symbol = random.choice(token_symbols)
     token = TOKENS[token_symbol]
 
-    if is_mon_to_token:
-        amount = get_random_amount()
-        amount_in_wei = w3.to_wei(amount, 'ether')
-        print_border(f"🎲 Random Swap: {amount} MON → {token_symbol} | {wallet}", Fore.YELLOW)
-        return await swap_mon_to_token(private_key, token_symbol, amount)
-    else:
-        amount = get_random_amount()
-        print_border(f"🎲 Random Swap: {amount} {token_symbol} → MON | {wallet}", Fore.YELLOW)
-        return await swap_token_to_mon(private_key, token_symbol, amount)
+    amount = get_random_amount()
+    amount_in_wei = w3.to_wei(amount, 'ether')
+    print_border(f"🎲 Random Swap: {amount} MON → {token_symbol} | {wallet}", Fore.YELLOW)
+    await swap_mon_to_token(private_key, token_symbol, amount)
+    await asyncio.sleep(3)
+    amount = get_random_amount()
+    print_border(f"🎲 Random Swap: {amount} {token_symbol} → MON | {wallet}", Fore.YELLOW)
+    return await swap_token_to_mon(private_key, token_symbol, amount)
+
+    # if is_mon_to_token:
+    #     amount = get_random_amount()
+    #     amount_in_wei = w3.to_wei(amount, 'ether')
+    #     print_border(f"🎲 Random Swap: {amount} MON → {token_symbol} | {wallet}", Fore.YELLOW)
+    #     return await swap_mon_to_token(private_key, token_symbol, amount)
+    # else:
+    #     amount = get_random_amount()
+    #     print_border(f"🎲 Random Swap: {amount} {token_symbol} → MON | {wallet}", Fore.YELLOW)
+    #     return await swap_token_to_mon(private_key, token_symbol, amount)
 
 # Run swap cycle
 async def run_swap_cycle(cycles, private_keys):

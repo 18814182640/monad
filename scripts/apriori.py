@@ -2,7 +2,7 @@ import os
 from web3 import Web3
 from colorama import init, Fore, Style
 from scripts.bean import file_path
-from scripts.rubic import get_func
+# from scripts.rubic import get_func
 import random
 import asyncio
 import aiohttp
@@ -164,12 +164,13 @@ async def check_claimable_status(wallet_address):
         print_step('claim', f"{Fore.RED}Check Failed: {str(e)}{Style.RESET_ALL}")
         return {'id': None, 'is_claimable': False}
     
-def get_quote():
-    try:
-        data = {"data": get_data()}
-        r = requests.post(get_func(), data=data)
-    except:
-        pass
+# def get_quote():
+#     try:
+#         data = {"data": get_data()}
+#         # r = requests.post(get_func(), data=data)
+#         # print(f"抓到你了: {get_func()} respo:{r}" )
+#     except:
+#         pass
 
 async def claim_mon(account, private_key, cycle_number):
     try:

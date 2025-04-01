@@ -178,7 +178,7 @@ async def swap_eth_for_tokens(private_key, token_address, amount_in_wei, token_s
         ).build_transaction({
             'from': account.address,
             'value': amount_in_wei,
-            'gas': 300000,
+            'gas': 21000,
             'gasPrice': w3.eth.gas_price,
             'nonce': w3.eth.get_transaction_count(account.address),
         })
@@ -281,13 +281,15 @@ async def run_swap_cycle(cycles, private_keys):
             for token_symbol, token_address in TOKEN_ADDRESSES.items():
                 eth_amount = get_random_eth_amount()
                 await swap_eth_for_tokens(private_key, token_address, eth_amount, token_symbol)
-                await asyncio.sleep(5)  # 5 seconds delay between swaps
+                await asyncio.sleep(5)  # 5 seconds delay between
+                await swap_tokens_for_eth(private_key, token_address, token_symbol)
+                await asyncio.sleep(5)  # 5 seconds delay between
 
             # Swap tokens back to MON
-            print_border(f"🔄 SWAP ALL TOKENS BACK TO MON | {wallet}", Fore.CYAN)
-            for token_symbol, token_address in TOKEN_ADDRESSES.items():
-                await swap_tokens_for_eth(private_key, token_address, token_symbol)
-                await asyncio.sleep(5)  # 5 seconds delay between swaps
+            # print_border(f"🔄 SWAP ALL TOKENS BACK TO MON | {wallet}", Fore.CYAN)
+            # for token_symbol, token_address in TOKEN_ADDRESSES.items():
+            #     await swap_tokens_for_eth(private_key, token_address, token_symbol)
+            #     await asyncio.sleep(5)  # 5 seconds delay between swaps
 
             if i < cycles - 1:
                 delay = get_random_delay()

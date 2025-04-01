@@ -1,5 +1,5 @@
 inquirer
-web3
+web3==5.31.4
 colorama
 py-solc-x
 eth-account
