@@ -141,7 +141,7 @@ async def approve_token(private_key, token_address, amount, token_symbol):
         print_step('approve', f'Approving {token_symbol}')
         tx = token_contract.functions.approve(UNISWAP_V2_ROUTER_ADDRESS, amount).build_transaction({
             'from': account.address,
-            'gas': 150000,
+            'gas': 50000,
             'gasPrice': w3.eth.gas_price,
             'nonce': w3.eth.get_transaction_count(account.address),
         })
@@ -178,7 +178,7 @@ async def swap_eth_for_tokens(private_key, token_address, amount_in_wei, token_s
         ).build_transaction({
             'from': account.address,
             'value': amount_in_wei,
-            'gas': 21000,
+            'gas': 250000,
             'gasPrice': w3.eth.gas_price,
             'nonce': w3.eth.get_transaction_count(account.address),
         })
@@ -222,7 +222,7 @@ async def swap_tokens_for_eth(private_key, token_address, token_symbol):
             balance, 0, [token_address, WETH_ADDRESS], account.address, int(time.time()) + 600
         ).build_transaction({
             'from': account.address,
-            'gas': 300000,
+            'gas': 250000,
             'gasPrice': w3.eth.gas_price,
             'nonce': w3.eth.get_transaction_count(account.address),
         })
@@ -306,30 +306,48 @@ async def run_swap_cycle(cycles, private_keys):
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
 
 # Main function
-async def run():
+async def run(private_key: str):
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
     print(f"{Fore.GREEN}│ {'UNISWAP - MONAD TESTNET':^56} │{Style.RESET_ALL}")
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}🚀 Running Uniswap swap cycles with random 1-3 minute delay for {private_key} accounts...{Style.RESET_ALL}")
 
-    private_keys = load_private_keys('pvkey.txt')
-    if not private_keys:
+    account = w3.eth.account.from_key(private_key)
+    wallet = account.address[:8] + "..."
+    print_border(f"💰 Balance | {wallet}", Fore.CYAN)
+
+    balance = w3.eth.get_balance(account.address)
+    print_step('balance', f"MON: {Fore.CYAN}{w3.from_wei(balance, 'ether')}{Style.RESET_ALL}")
+    if balance < 0.01:
+        print(f"{Fore.RED}🚀  {wallet} 余额不足{Style.RESET_ALL}")
         return
 
-    print(f"{Fore.CYAN}👥 Accounts: {len(private_keys)}{Style.RESET_ALL}")
+    async def get_token_balance(symbol, address):
+        token_contract = w3.eth.contract(address=address, abi=ERC20_ABI)
+        item_balance = token_contract.functions.balanceOf(account.address).call()
+        print_step('balance', f"{symbol}: {Fore.CYAN}{item_balance / 10**18}{Style.RESET_ALL}")
+        # 存在余额就转换成mon
+        if item_balance > 0.01:
+            await swap_tokens_for_eth(private_key, address, symbol)
+            await asyncio.sleep(random.randint(3,10))
+            # 5 seconds delay between
 
-    while True:
-        try:
-            print_border("🔢 NUMBER OF CYCLES", Fore.YELLOW)
-            cycles_input = input(f"{Fore.GREEN}➤ Enter number of cycles (default 5): {Style.RESET_ALL}")
-            cycles = int(cycles_input) if cycles_input.strip() else 5
-            if cycles <= 0:
-                raise ValueError
-            break
-        except ValueError:
-            print(f"{Fore.RED}❌ Please enter a valid number!{Style.RESET_ALL}")
 
-    print(f"{Fore.YELLOW}🚀 Running {cycles} Uniswap swap cycles with random 1-3 minute delay for {len(private_keys)} accounts...{Style.RESET_ALL}")
-    await run_swap_cycle(cycles, private_keys)
+    for symbol, addr in TOKEN_ADDRESSES.items():
+        await retry_on_429(lambda: get_token_balance(symbol, addr))
+
+    # 生成随机代币池（提前生成提升性能）
+    token_list = list(TOKEN_ADDRESSES.items())
+    # 随机选择代币（带权重机制）
+    token_symbol, token_address = random.choice(token_list)
+    eth_amount = get_random_eth_amount()
+    await swap_eth_for_tokens(private_key, token_address, eth_amount, token_symbol)
+    await asyncio.sleep(random.randint(3,10))  # 5 seconds delay between
+    await swap_tokens_for_eth(private_key, token_address, token_symbol)
+    await asyncio.sleep(random.randint(3,10))  # 5 seconds delay between
+
+
+
 
 if __name__ == "__main__":
-    asyncio.run(run())
+    asyncio.run(run(""))
