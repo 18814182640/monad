@@ -6,6 +6,7 @@ import random
 from web3 import Web3
 from solcx import compile_standard, install_solc
 from colorama import init, Fore, Style
+import string
 
 # Initialize colorama
 init(autoreset=True)
@@ -167,31 +168,34 @@ async def run_deploy_cycle(cycles, private_keys):
     print(f"{Fore.GREEN}│ ALL DONE: {cycles} CYCLES FOR {len(private_keys)} ACCOUNTS{' ' * (32 - len(str(cycles)) - len(str(len(private_keys))))}│{Style.RESET_ALL}")
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
 
+# 生成随机名字
+def generate_random_name(s:int, e:int):
+    # 名字长度随机在 3-7 之间
+    length = random.randint(s, e)
+
+    # 元音和辅音，用于生成更自然的发音
+    vowels = "aeiou"
+    consonants = "".join(c for c in string.ascii_lowercase if c not in vowels)
+
+    # 生成名字（首字母大写）
+    return "".join(random.choice(consonants if i % 2 == 0 else vowels) for i in range(length)).capitalize()
+
+
 # Main function
-async def run():
+async def run(private_key:str):
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
     print(f"{Fore.GREEN}│ {'DEPLOY CONTRACT - MONAD TESTNET':^56} │{Style.RESET_ALL}")
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
+    wallet = w3.eth.account.from_key(private_key).address
+    print_border(f"🏦 ACCOUNT  | {wallet}", Fore.BLUE)
 
-    private_keys = load_private_keys('pvkey.txt')
-    if not private_keys:
-        return
+    token_name = generate_random_name(4, 10)
+    token_symbol = generate_random_name(4, 7)
+    print(f"{Fore.GREEN}token_name:  {token_name}   token_symbol:  {token_symbol}{Style.RESET_ALL}")
+    await deploy_contract(private_key, token_name, token_symbol)
 
-    print(f"{Fore.CYAN}👥 Accounts: {len(private_keys)}{Style.RESET_ALL}")
 
-    while True:
-        try:
-            print_border("🔢 NUMBER OF CYCLES", Fore.YELLOW)
-            cycles_input = input(f"{Fore.GREEN}➤ Enter number (default 5): {Style.RESET_ALL}")
-            cycles = int(cycles_input) if cycles_input.strip() else 5
-            if cycles <= 0:
-                raise ValueError
-            break
-        except ValueError:
-            print(f"{Fore.RED}❌ Please enter a valid number!{Style.RESET_ALL}")
 
-    print(f"{Fore.YELLOW}🚀 Running {cycles} contract deploy cycles for {len(private_keys)} accounts...{Style.RESET_ALL}")
-    await run_deploy_cycle(cycles, private_keys)
 
 if __name__ == "__main__":
-    asyncio.run(run())
+    asyncio.run(run(""))

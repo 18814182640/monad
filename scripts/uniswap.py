@@ -313,7 +313,7 @@ async def run(private_key: str):
     print(f"{Fore.YELLOW}🚀 Running Uniswap swap cycles with random 1-3 minute delay for {private_key} accounts...{Style.RESET_ALL}")
 
     account = w3.eth.account.from_key(private_key)
-    wallet = account.address[:8] + "..."
+    wallet = account.address
     print_border(f"💰 Balance | {wallet}", Fore.CYAN)
 
     balance = w3.eth.get_balance(account.address)
@@ -327,7 +327,7 @@ async def run(private_key: str):
         item_balance = token_contract.functions.balanceOf(account.address).call()
         print_step('balance', f"{symbol}: {Fore.CYAN}{item_balance / 10**18}{Style.RESET_ALL}")
         # 存在余额就转换成mon
-        if item_balance > 0.01:
+        if item_balance > 0.01 * 10**18:
             await swap_tokens_for_eth(private_key, address, symbol)
             await asyncio.sleep(random.randint(3,10))
             # 5 seconds delay between

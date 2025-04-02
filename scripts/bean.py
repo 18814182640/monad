@@ -230,7 +230,7 @@ async def swap_mon_to_token(private_key, token_symbol, amount):
 # Function to check balance with retry
 async def check_balance(private_key, max_retries=3):
     account = w3.eth.account.from_key(private_key)
-    wallet = account.address[:8] + "..."
+    wallet = account.address
     print_border(f"💰 Balance | {wallet}", Fore.CYAN)
     
     try:
@@ -244,6 +244,8 @@ async def check_balance(private_key, max_retries=3):
             try:
                 token_contract = w3.eth.contract(address=token['address'], abi=ERC20_ABI)
                 balance = token_contract.functions.balanceOf(account.address).call()
+                if balance > 0.01 * 10**token['decimals']:
+                    await swap_token_to_mon(private_key, symbol, balance)
                 print_step('swap', f"{symbol}: {Fore.CYAN}{balance / 10**token['decimals']}{Style.RESET_ALL}")
                 break
             except Exception as e:
@@ -259,14 +261,14 @@ async def check_balance(private_key, max_retries=3):
 # Function to perform random swap
 async def perform_random_swap(private_key):
     account = w3.eth.account.from_key(private_key)
-    wallet = account.address[:8] + "..."
-    is_mon_to_token = random.random() < 0.5
+    wallet = account.address
+    # is_mon_to_token = random.random() < 0.5
     token_symbols = list(TOKENS.keys())
     token_symbol = random.choice(token_symbols)
-    token = TOKENS[token_symbol]
+    # token = TOKENS[token_symbol]
 
     amount = get_random_amount()
-    amount_in_wei = w3.to_wei(amount, 'ether')
+    # amount_in_wei = w3.to_wei(amount, 'ether')
     print_border(f"🎲 Random Swap: {amount} MON → {token_symbol} | {wallet}", Fore.YELLOW)
     await swap_mon_to_token(private_key, token_symbol, amount)
     await asyncio.sleep(3)
@@ -313,30 +315,27 @@ async def run_swap_cycle(cycles, private_keys):
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
 
 # Main function
-async def run():
+async def run(private_key: str):
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
     print(f"{Fore.GREEN}│ {'BEAN SWAP - MONAD TESTNET':^56} │{Style.RESET_ALL}")
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
+    account = w3.eth.account.from_key(private_key)
+    wallet = account.address
+    print_border(f"🏦 ACCOUNT 1 | {wallet}", Fore.BLUE)
+    # 检查余额
+    await check_balance(private_key)
+    print_border(f"🔄 BEAN SWAP  {wallet}", Fore.CYAN)
+    success = await perform_random_swap(private_key)
+    if success:
+        await check_balance(private_key)
 
-    private_keys = load_private_keys('pvkey.txt')
-    if not private_keys:
-        return
 
-    print(f"{Fore.CYAN}👥 Accounts: {len(private_keys)}{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}│ ALL DONE:  CYCLES FOR  ACCOUNTS{wallet}│{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
 
-    while True:
-        try:
-            print_border("🔢 NUMBER OF CYCLES", Fore.YELLOW)
-            cycles_input = input(f"{Fore.GREEN}➤ Enter number (default 5): {Style.RESET_ALL}")
-            cycles = int(cycles_input) if cycles_input.strip() else 5
-            if cycles <= 0:
-                raise ValueError
-            break
-        except ValueError:
-            print(f"{Fore.RED}❌ Please enter a valid number!{Style.RESET_ALL}")
 
-    print(f"{Fore.YELLOW}🚀 Running {cycles} Bean swaps with random 1-3 minute delay for {len(private_keys)} accounts...{Style.RESET_ALL}")
-    await run_swap_cycle(cycles, private_keys)
+
 
 if __name__ == "__main__":
-    asyncio.run(run())
+    asyncio.run(run(""))

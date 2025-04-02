@@ -70,7 +70,7 @@ def get_data():
 
 async def stake_mon(account, private_key, cycle_number):
     try:
-        print_border(f"Preparing to stake MON - Cycle {cycle_number} | Account: {account.address[:8]}...")
+        print_border(f"Preparing to stake MON - Cycle {cycle_number} | Account: {account.address}")
         print_step('stake', f"Stake Amount: {Fore.GREEN}{w3.from_wei(get_random_amount(), 'ether')} MON{Style.RESET_ALL}")
 
         stake_amount = get_random_amount()
@@ -108,7 +108,7 @@ async def stake_mon(account, private_key, cycle_number):
 
 async def request_unstake_apr_mon(account, private_key, amount_to_unstake, cycle_number):
     try:
-        print_border(f"Requesting unstake - Cycle {cycle_number} | Account: {account.address[:8]}...")
+        print_border(f"Requesting unstake - Cycle {cycle_number} | Account: {account.address}")
         print_step('unstake', f"Unstake Amount: {Fore.GREEN}{w3.from_wei(amount_to_unstake, 'ether')} aprMON{Style.RESET_ALL}")
 
         function_selector = '0x7d41c86e'
@@ -174,7 +174,7 @@ async def check_claimable_status(wallet_address):
 
 async def claim_mon(account, private_key, cycle_number):
     try:
-        print_border(f"Checking claim - Cycle {cycle_number} | Account: {account.address[:8]}...")
+        print_border(f"Checking claim - Cycle {cycle_number} | Account: {account.address}")
         status = await check_claimable_status(account.address)
         
         if not status['is_claimable'] or not status['id']:
@@ -246,64 +246,18 @@ async def run_cycle(account, private_key, cycle_number):
         print(f"{Fore.RED}{'═' * 60}{Style.RESET_ALL}")
         raise
 
-async def get_cycle_count():
-    while True:
-        try:
-            print_border("How many cycles to run?", Fore.YELLOW)
-            answer = input(f"{Fore.GREEN}➤ Enter number: {Style.RESET_ALL}")
-            cycle_count = int(answer)
-            if cycle_count <= 0:
-                raise ValueError
-            return cycle_count
-        except ValueError:
-            print(f"{Fore.RED}❌ Please enter a positive integer!{Style.RESET_ALL}")
 
-async def run():
+
+async def run(private_key: str):
     try:
         print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
         print(f"{Fore.GREEN}│ {'STAKING APRIORI - MONAD TESTNET':^56} │{Style.RESET_ALL}")
         print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
 
-        # Read private keys
-        try:
-            with open('pvkey.txt', 'r') as file:
-                PRIVATE_KEYS = [line.strip() for line in file.readlines() if line.strip()]
-            if not PRIVATE_KEYS:
-                raise ValueError("No keys found in pvkey.txt")
-            ACCOUNTS = [w3.eth.account.from_key(pk) for pk in PRIVATE_KEYS]
-        except FileNotFoundError:
-            print(f"{Fore.RED}❌ pvkey.txt not found{Style.RESET_ALL}")
-            return
-        except Exception as e:
-            print(f"{Fore.RED}❌ Error reading keys: {str(e)}{Style.RESET_ALL}")
-            return
+        account = w3.eth.account.from_key(private_key)
+        print_border(f"PROCESSING ACCOUNT 1 | {account.address[:8]}...", Fore.CYAN)
+        await run_cycle(account, private_key, 1)
 
-        print(f"{Fore.CYAN}👥 Accounts: {len(ACCOUNTS)}{Style.RESET_ALL}")
-        
-        cycle_count = await get_cycle_count()
-        print(f"\n{Fore.YELLOW}🚀 Running {cycle_count} cycles for {len(ACCOUNTS)} accounts{Style.RESET_ALL}\n")
-
-        for account_idx, (account, private_key) in enumerate(zip(ACCOUNTS, PRIVATE_KEYS), 1):
-            print_border(f"PROCESSING ACCOUNT {account_idx}/{len(ACCOUNTS)} | {account.address[:8]}...", Fore.CYAN)
-            
-            for i in range(1, cycle_count + 1):
-                await run_cycle(account, private_key, i)
-
-                if i < cycle_count:
-                    delay_time = get_random_delay()
-                    print(f"\n{Fore.YELLOW}⏳ Waiting {delay_time} seconds before next cycle...{Style.RESET_ALL}")
-                    await delay(delay_time * 1000)
-
-            print(f"\n{Fore.GREEN}✔ Completed {account.address[:8]}...{Style.RESET_ALL}")
-
-            if account_idx < len(ACCOUNTS):
-                delay_time = get_random_delay()
-                print(f"\n{Fore.YELLOW}⏳ Waiting {delay_time} seconds before next account...{Style.RESET_ALL}")
-                await delay(delay_time * 1000)
-
-        print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
-        print(f"{Fore.GREEN}│ ALL DONE: {cycle_count} CYCLES COMPLETED{' ' * (56 - len(str(cycle_count)) - 25)}│{Style.RESET_ALL}")
-        print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
 
     except Exception as e:
         print(f"{Fore.RED}{'═' * 60}{Style.RESET_ALL}")
@@ -311,4 +265,4 @@ async def run():
         print(f"{Fore.RED}{'═' * 60}{Style.RESET_ALL}")
 
 if __name__ == "__main__":
-    asyncio.run(run())  # Run with English by default
+    asyncio.run(run(""))  # Run with English by default

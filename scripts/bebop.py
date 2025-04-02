@@ -3,6 +3,7 @@ import random
 import time
 from colorama import init, Fore, Style
 from web3 import Web3
+import asyncio
 
 # Initialize colorama
 init(autoreset=True)
@@ -138,38 +139,35 @@ def run_swap_cycle(cycles, private_keys):
                 print(f"\n{Fore.YELLOW}⏳ Waiting {delay} seconds...{Style.RESET_ALL}")
                 time.sleep(delay)
 
-def run():
+# Generate random amount (0.001 - 0.01 MON)
+def get_random_amount():
+    return round(random.uniform(0.01, 999), 6)
+
+async def run(private_key:str):
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
     print(f"{Fore.GREEN}│ {'BEBOP SWAP - MONAD TESTNET':^56} │{Style.RESET_ALL}")
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
 
     # Load private keys
-    private_keys = load_private_keys('pvkey.txt')
-    if not private_keys:
-        print(f"{Fore.RED}❌ prkeys.txt not found{Style.RESET_ALL}")
-        return
+    wallet = w3.eth.account.from_key(private_key).address
 
-    print(f"{Fore.CYAN}👥 Accounts: {len(private_keys)}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'═' * 60}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}│ {wallet} │{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'═' * 60}{Style.RESET_ALL}")
 
-    # Get number of cycles
-    while True:
-        try:
-            print_border("NUMBER OF CYCLES", Fore.YELLOW)
-            cycles = input(f"{Fore.GREEN}➤ Enter number (default 1): {Style.RESET_ALL}")
-            cycles = int(cycles) if cycles else 1
-            if cycles > 0:
-                break
-            print(f"{Fore.RED}❌ Number must be > 0{Style.RESET_ALL}")
-        except ValueError:
-            print(f"{Fore.RED}❌ Enter a valid number{Style.RESET_ALL}")
+    amount = w3.to_wei(get_random_amount(), 'ether')
+    print(f"{Fore.GREEN}│ 转换金额： {amount} │{Style.RESET_ALL}")
+    wrap_mon(private_key, amount)
+    await asyncio.sleep(2)
+    unwrap_mon(private_key, amount)
 
-    # Run script
-    print(f"{Fore.YELLOW}🚀 Running {cycles} swap cycles...{Style.RESET_ALL}")
-    run_swap_cycle(cycles, private_keys)
+
+
+
 
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
     print(f"{Fore.GREEN}│ {'ALL DONE':^19} │{Style.RESET_ALL}")
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
 
 if __name__ == "__main__":
-    run()
+    run("")

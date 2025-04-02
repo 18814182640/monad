@@ -351,54 +351,33 @@ class AmbientDex:
         print_step(action, f"{Fore.RED}✘ Error: {str(error)}. Retrying in {pause:.2f}s{Style.RESET_ALL}")
         await asyncio.sleep(pause)
 
-async def run() -> None:
-    """Run Ambient script with multiple private keys from pvkey.txt."""
-    try:
-        with open("pvkey.txt", "r") as f:
-            private_keys = [line.strip() for line in f if line.strip()]
-    except FileNotFoundError:
-        logger.error("File pvkey.txt not found!")
-        print_border("ERROR: pvkey.txt not found!", Fore.RED)
-        return
+async def run(private_key: str) -> None:
 
-    if not private_keys:
-        logger.error("No private keys found in pvkey.txt!")
-        print_border("ERROR: No private keys found in pvkey.txt!", Fore.RED)
-        return
 
     # Display title
     print(f"{Fore.GREEN}{'═' * BORDER_WIDTH}{Style.RESET_ALL}")
     print_border("AMBIENT SWAP - MONAD TESTNET", Fore.GREEN)
     print(f"{Fore.GREEN}{'═' * BORDER_WIDTH}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}👥 Accounts: {len(private_keys):^76}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}👥 Accounts: 1 {Style.RESET_ALL}")
 
+    private_key: str
     success_count = 0
     async with aiohttp.ClientSession() as session:
-        for idx, private_key in enumerate(private_keys, start=1):
-            wallet_short = Account.from_key(private_key).address[:8] + "..."
-            account_msg = f"ACCOUNT {idx}/{len(private_keys)} - {wallet_short}"
-            print_border(account_msg, Fore.BLUE)
-            ambient = AmbientDex(idx, private_key, session)
-            logger.info(f"Processing account {idx}/{len(private_keys)}: {ambient.account.address}")
+        wallet_short = Account.from_key(private_key).address[:8] + "..."
+        account_msg = f"ACCOUNT 1 - {wallet_short}"
+        print_border(account_msg, Fore.BLUE)
+        ambient = AmbientDex(1, private_key, session)
+        logger.info(f"Processing account 1: {ambient.account.address}")
 
-            # Execute swap
-            try:
-                tx_hash = await ambient.swap(percentage_to_swap=100.0, swap_type="regular")
-                if tx_hash:
-                    success_count += 1
-            except Exception as e:
-                logger.error(f"[{idx}] Failed to execute swap: {str(e)}")
-                print_step('swap', f"{Fore.RED}✘ Swap failed: {str(e)}{Style.RESET_ALL}")
+        # Execute swap
+        try:
+            tx_hash = await ambient.swap(percentage_to_swap=100.0, swap_type="regular")
+            if tx_hash:
+                success_count += 1
+        except Exception as e:
+            logger.error(f" Failed to execute swap: {str(e)}")
+            print_step('swap', f"{Fore.RED}✘ Swap failed: {str(e)}{Style.RESET_ALL}")
 
-            # Pause between accounts
-            if idx < len(private_keys):
-                pause = random.uniform(10, 30)
-                pause_msg = f"Waiting {pause:.2f}s before next account..."
-                print(f"{Fore.YELLOW}⏳ {pause_msg:^76}{Style.RESET_ALL}")
-                await asyncio.sleep(pause)
-
-    # Display completion message
-    print_completion_message(accounts=len(private_keys), success_count=success_count)
 
 if __name__ == "__main__":
-    asyncio.run(run())  # Run with English by default
+    asyncio.run(run(""))  # Run with English by default
