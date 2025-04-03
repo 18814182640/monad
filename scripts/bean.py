@@ -136,7 +136,7 @@ async def approve_token(private_key, token_address, amount, decimals, max_retrie
             })
 
             signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-            tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             await asyncio.sleep(2)
             receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=180)
             if receipt.status == 1:
@@ -176,7 +176,7 @@ async def swap_token_to_mon(private_key, token_symbol, amount):
 
         print_step('swap', 'Sending swap transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         
         print_step('swap', f"Tx Hash: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         await asyncio.sleep(2)
@@ -212,7 +212,7 @@ async def swap_mon_to_token(private_key, token_symbol, amount):
 
         print_step('swap', 'Sending swap transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         
         print_step('swap', f"Tx Hash: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         await asyncio.sleep(2)
@@ -338,4 +338,4 @@ async def run(private_key: str):
 
 
 if __name__ == "__main__":
-    asyncio.run(run(""))
+    asyncio.run(run("4d59e55adf8d8c76295196fbccb2019d9d2b87a2e1e2d664b9408012ebaf9069"))

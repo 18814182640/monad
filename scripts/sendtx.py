@@ -91,7 +91,7 @@ async def send_transaction(private_key, to_address, amount):
 
         print_step('send', 'Sending transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         tx_link = f"{EXPLORER_URL}{tx_hash.hex()}"
         
         await asyncio.sleep(2)

@@ -100,7 +100,7 @@ def wrap_mon(private_key, amount):
 
         print_step('wrap', 'Sending transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
 
         print_step('wrap', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -128,7 +128,7 @@ def unwrap_mon(private_key, amount):
 
         print_step('unwrap', 'Sending transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
 
         print_step('unwrap', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -162,7 +162,7 @@ def swap_mon_to_usdt(private_key, amount):
             'chainId': CHAIN_ID
         })
         signed_approve_tx = w3.eth.account.sign_transaction(approve_tx, private_key)
-        approve_tx_hash = w3.eth.send_raw_transaction(signed_approve_tx.rawTransaction)
+        approve_tx_hash = w3.eth.send_raw_transaction(signed_approve_tx.raw_transaction)
         print_step('swap', f"Approval Tx: {Fore.YELLOW}{EXPLORER_URL}{approve_tx_hash.hex()}{Style.RESET_ALL}")
         w3.eth.wait_for_transaction_receipt(approve_tx_hash)
 
@@ -200,7 +200,7 @@ def swap_mon_to_usdt(private_key, amount):
 
         print_step('swap', 'Sending swap transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
 
         print_step('swap', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash)

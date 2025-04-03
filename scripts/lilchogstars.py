@@ -126,7 +126,7 @@ class Lilchogstars:
                     **(await self._get_gas_params()),
                 })
                 signed_txn = self.web3.eth.account.sign_transaction(mint_txn, self.private_key)
-                tx_hash = await self.web3.eth.send_raw_transaction(signed_txn.rawTransaction)
+                tx_hash = await self.web3.eth.send_raw_transaction(signed_txn.raw_transaction)
                 receipt = await self.web3.eth.wait_for_transaction_receipt(tx_hash)
                 
                 if receipt["status"] == 1:

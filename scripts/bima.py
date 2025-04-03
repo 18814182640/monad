@@ -374,7 +374,7 @@ class Bima:
     async def _send_transaction(self, transaction: Dict) -> bytes:
         """Gửi giao dịch đã ký."""
         signed_txn = self.web3.eth.account.sign_transaction(transaction, self.private_key)
-        tx_hash = await self.web3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        tx_hash = await self.web3.eth.send_raw_transaction(signed_txn.raw_transaction)
         logger.info(f"[{self.account_index}] Waiting for transaction confirmation...")
         await self.web3.eth.wait_for_transaction_receipt(tx_hash)
         return tx_hash
@@ -393,64 +393,45 @@ class Bima:
         await asyncio.sleep(pause)
 
 
-async def run() -> None:
-    """Run Bima script with multiple private keys from pvkey.txt."""
-    try:
-        with open("pvkey.txt", "r") as f:
-            private_keys = [line.strip() for line in f if line.strip()]
-    except FileNotFoundError:
-        logger.error("File pvkey.txt not found!")
-        print_border("ERROR: pvkey.txt not found!", Fore.RED)
-        return
+async def run(private_key:str) -> None:
 
-    if not private_keys:
-        logger.error("No private keys found in pvkey.txt!")
-        print_border("ERROR: No private keys found in pvkey.txt!", Fore.RED)
-        return
 
     # Display opening title
     print(f"{Fore.GREEN}{'═' * BORDER_WIDTH}{Style.RESET_ALL}")
     print_border("BIMA DEPOSIT - MONAD TESTNET", Fore.GREEN)
     print(f"{Fore.GREEN}{'═' * BORDER_WIDTH}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}👥 {'Accounts'}: {len(private_keys):^76}{Style.RESET_ALL}")
 
-    success_count = 0
     async with aiohttp.ClientSession() as session:
-        for idx, private_key in enumerate(private_keys, start=1):
-            wallet_short = Account.from_key(private_key).address[:8] + "..."
-            account_msg = f"ACCOUNT {idx}/{len(private_keys)} - {wallet_short}"
-            print_border(account_msg, Fore.BLUE)
-            bima = Bima(idx, proxy="", private_key=private_key, session=session)
-            logger.info(f"Processing account {idx}/{len(private_keys)}: {bima.account.address}")
+        wallet_short = Account.from_key(private_key).address
+        account_msg = f"ACCOUNT 1 - {wallet_short}"
+        print_border(account_msg, Fore.BLUE)
+        bima = Bima(1, proxy="", private_key=private_key, session=session)
+        logger.info(f"Processing account 1: {bima.account.address}")
 
-            # Check wallet bmBTC balance
-            token_contract = bima.web3.eth.contract(address=bmBTC, abi=TOKEN_ABI)
-            wallet_balance = await token_contract.functions.balanceOf(bima.account.address).call()
-            print_step('balance', f"Balance: {Fore.CYAN}{Web3.from_wei(wallet_balance, 'ether')} bmBTC{Style.RESET_ALL}")
+        # Check wallet bmBTC balance
+        token_contract = bima.web3.eth.contract(address=bmBTC, abi=TOKEN_ABI)
+        wallet_balance = await token_contract.functions.balanceOf(bima.account.address).call()
+        print_step('balance', f"Balance: {Fore.CYAN}{Web3.from_wei(wallet_balance, 'ether')} bmBTC{Style.RESET_ALL}")
 
-            # Perform tasks in order
-            if wallet_balance == 0:
-                faucet_success = await bima.get_faucet_tokens()
-                if not faucet_success:
-                    continue  # Skip if faucet fails (out of tokens or daily limit)
-            else:
-                logger.info(f"[{bima.account_index}] Wallet already has bmBTC, skipping faucet")
-                print_step('faucet', f"{Fore.YELLOW}⚠ Wallet has {Web3.from_wei(wallet_balance, 'ether')} bmBTC, skipping faucet{Style.RESET_ALL}")
+        # Perform tasks in order
+        if wallet_balance == 0:
+            faucet_success = await bima.get_faucet_tokens()
+            if not faucet_success:
+                # Skip if faucet fails (out of tokens or daily limit)
+                return
+        else:
+            logger.info(f"[{bima.account_index}] Wallet already has bmBTC, skipping faucet")
+            print_step('faucet', f"{Fore.YELLOW}⚠ Wallet has {Web3.from_wei(wallet_balance, 'ether')} bmBTC, skipping faucet{Style.RESET_ALL}")
 
-            # Continue with lending if wallet has tokens or faucet was successful
-            if await bima.lend():
-                success_count += 1
+        # Continue with lending if wallet has tokens or faucet was successful
+        if await bima.lend():
+            print(f"{Fore.GREEN}借款执行成功{Style.RESET_ALL}")
 
-            # Pause between accounts
-            if idx < len(private_keys):
-                pause = random.uniform(10, 30)
-                pause_msg = f"Waiting {pause:.2f}s before next account..."
-                print(f"{Fore.YELLOW}⏳ {pause_msg:^76}{Style.RESET_ALL}")
-                await asyncio.sleep(pause)
 
-    # Display completion message
-    print_completion_message(accounts=len(private_keys), success_count=success_count)
+
+
+
 
 
 if __name__ == "__main__":
-    asyncio.run(run())  # Run with English by default
+    asyncio.run(run(""))  # Run with English by default

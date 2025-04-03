@@ -71,7 +71,7 @@ def get_random_delay():
 def wrap_mon(private_key, amount):
     try:
         account = w3.eth.account.from_key(private_key)
-        wallet = account.address[:8] + "..."
+        wallet = account.address
         
         print_border(f"Wrap {w3.from_wei(amount, 'ether')} MON → WMON | {wallet}")
         tx = contract.functions.deposit().build_transaction({
@@ -84,7 +84,7 @@ def wrap_mon(private_key, amount):
 
         print_step('wrap', 'Sending transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         
         print_step('wrap', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -110,7 +110,7 @@ def unwrap_mon(private_key, amount):
 
         print_step('unwrap', 'Sending transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         
         print_step('unwrap', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -141,7 +141,7 @@ def run_swap_cycle(cycles, private_keys):
 
 # Generate random amount (0.001 - 0.01 MON)
 def get_random_amount():
-    return round(random.uniform(0.01, 999), 6)
+    return round(random.uniform(0.001, 0.1), 6)
 
 async def run(private_key:str):
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")

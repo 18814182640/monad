@@ -92,7 +92,7 @@ async def stake_mon(account, private_key, cycle_number):
 
         print_step('stake', 'Sending transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         
         print_step('stake', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{w3.to_hex(tx_hash)}{Style.RESET_ALL}")
         print_step('stake', 'Waiting for confirmation...')
@@ -130,7 +130,7 @@ async def request_unstake_apr_mon(account, private_key, amount_to_unstake, cycle
 
         print_step('unstake', 'Sending request...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         
         print_step('unstake', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{w3.to_hex(tx_hash)}{Style.RESET_ALL}")
         print_step('unstake', 'Waiting for confirmation...')
@@ -202,7 +202,7 @@ async def claim_mon(account, private_key, cycle_number):
 
         print_step('claim', 'Sending transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         
         print_step('claim', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{w3.to_hex(tx_hash)}{Style.RESET_ALL}")
         print_step('claim', 'Waiting for confirmation...')

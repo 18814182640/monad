@@ -231,8 +231,8 @@ class AmbientDex:
                     **gas_params,
                 }
                 signed_txn = self.web3.eth.account.sign_transaction(transaction, self.account.key)
-                tx_hash = await self.web3.eth.send_raw_transaction(signed_txn.rawTransaction)
-                print_step('swap', "Waiting for transaction confirmation...", self.language)
+                tx_hash = await self.web3.eth.send_raw_transaction(signed_txn.raw_transaction)
+                print_step('swap', "Waiting for transaction confirmation...")
                 receipt = await self.web3.eth.wait_for_transaction_receipt(tx_hash, poll_latency=2)
                 if receipt['status'] == 1:
                     logger.success(f"[{self.account_index}] Transaction successful! TX: {EXPLORER_URL}{tx_hash.hex()}")
@@ -270,12 +270,12 @@ class AmbientDex:
                     **gas_params,
                 })
                 signed_txn = self.web3.eth.account.sign_transaction(approve_tx, self.account.key)
-                tx_hash = await self.web3.eth.send_raw_transaction(signed_txn.rawTransaction)
-                print_step('approve', f"Approving {self.convert_from_wei(amount, token):.4f} {token.upper()}...", self.language)
+                tx_hash = await self.web3.eth.send_raw_transaction(signed_txn.raw_transaction)
+                print_step('approve', f"Approving {self.convert_from_wei(amount, token):.4f} {token.upper()}...")
                 receipt = await self.web3.eth.wait_for_transaction_receipt(tx_hash, poll_latency=2)
                 if receipt['status'] == 1:
                     logger.success(f"[{self.account_index}] Approval successful! TX: {EXPLORER_URL}{tx_hash.hex()}")
-                    print_step('approve', f"{Fore.GREEN}✔ Approved! TX: {EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}", self.language)
+                    print_step('approve', f"{Fore.GREEN}✔ Approved! TX: {EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
                     return tx_hash.hex()
                 raise Exception("Approval failed")
             except Exception as e:
@@ -288,13 +288,13 @@ class AmbientDex:
             try:
                 tokens_with_balance = await self.get_tokens_with_balance()
                 if not tokens_with_balance:
-                    print_step('swap', f"{Fore.RED}✘ No tokens with balance found{Style.RESET_ALL}", self.language)
+                    print_step('swap', f"{Fore.RED}✘ No tokens with balance found{Style.RESET_ALL}")
                     return None
 
                 if swap_type == "collect":
                     tokens_to_swap = [(t, b) for t, b in tokens_with_balance if t != "native"]
                     if not tokens_to_swap:
-                        print_step('swap', f"{Fore.YELLOW}⚠ No tokens to collect to native{Style.RESET_ALL}", self.language)
+                        print_step('swap', f"{Fore.YELLOW}⚠ No tokens to collect to native{Style.RESET_ALL}")
                         return None
 
                     for token_in, balance in tokens_to_swap:
@@ -305,7 +305,7 @@ class AmbientDex:
                             amount_wei = self.convert_to_wei(balance, token_in)
                             await self.approve_token(token_in, amount_wei)
                             await asyncio.sleep(random.uniform(*PAUSE_BETWEEN_SWAPS))
-                            print_step('swap', f"Swapping {balance:.4f} {token_in.upper()} to MON...", self.language)
+                            print_step('swap', f"Swapping {balance:.4f} {token_in.upper()} to MON...")
                             tx_data = await self.generate_swap_data(token_in, "native", amount_wei)
                             tx_hash = await self.execute_transaction(tx_data)
                             if token_in != tokens_to_swap[-1][0]:
@@ -313,7 +313,7 @@ class AmbientDex:
                         except Exception as e:
                             logger.error(f"[{self.account_index}] Failed to collect {token_in} to native: {str(e)}")
                             continue
-                    print_step('swap', f"{Fore.GREEN}✔ Collection to native completed{Style.RESET_ALL}", self.language)
+                    print_step('swap', f"{Fore.GREEN}✔ Collection to native completed{Style.RESET_ALL}")
                     return "Collection complete"
 
                 else:  # Regular swap
@@ -335,13 +335,13 @@ class AmbientDex:
                         await self.approve_token(token_in, amount_wei)
                         await asyncio.sleep(random.uniform(*PAUSE_BETWEEN_SWAPS))
 
-                    print_step('swap', f"Swapping {amount_token:.4f} {token_in.upper()} to {token_out.upper()}...", self.language)
+                    print_step('swap', f"Swapping {amount_token:.4f} {token_in.upper()} to {token_out.upper()}...")
                     tx_data = await self.generate_swap_data(token_in, token_out, amount_wei)
                     return await self.execute_transaction(tx_data)
 
             except Exception as e:
                 await self._handle_error("swap", e)
-        print_step('swap', f"{Fore.RED}✘ Swap failed after {ATTEMPTS} attempts{Style.RESET_ALL}", self.language)
+        print_step('swap', f"{Fore.RED}✘ Swap failed after {ATTEMPTS} attempts{Style.RESET_ALL}")
         return None
 
     async def _handle_error(self, action: str, error: Exception) -> None:
@@ -363,7 +363,7 @@ async def run(private_key: str) -> None:
     private_key: str
     success_count = 0
     async with aiohttp.ClientSession() as session:
-        wallet_short = Account.from_key(private_key).address[:8] + "..."
+        wallet_short = Account.from_key(private_key).address
         account_msg = f"ACCOUNT 1 - {wallet_short}"
         print_border(account_msg, Fore.BLUE)
         ambient = AmbientDex(1, private_key, session)
@@ -380,4 +380,4 @@ async def run(private_key: str) -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(run(""))  # Run with English by default
+    asyncio.run(run("4d59e55adf8d8c76295196fbccb2019d9d2b87a2e1e2d664b9408012ebaf9069"))  # Run with English by default

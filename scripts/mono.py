@@ -87,7 +87,7 @@ async def send_transaction(private_key):
 
         print(f"{Fore.BLUE}🚀 Sending transaction...{Style.RESET_ALL}")
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         
         print(f"{Fore.GREEN}✅ Transaction sent! Waiting for confirmation...{Style.RESET_ALL}")
         await asyncio.sleep(1)

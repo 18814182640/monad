@@ -80,7 +80,7 @@ async def wrap_mon(private_key, amount):
 
         print_step('wrap', 'Sending transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         
         print_step('wrap', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         await asyncio.sleep(1)
@@ -107,7 +107,7 @@ async def unwrap_mon(private_key, amount):
 
         print_step('unwrap', 'Sending transaction...')
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         
         print_step('unwrap', f"Tx: {Fore.YELLOW}{EXPLORER_URL}{tx_hash.hex()}{Style.RESET_ALL}")
         await asyncio.sleep(1)
@@ -144,30 +144,23 @@ async def run_swap_cycle(cycles, private_keys):
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
 
 # Main function
-async def run():
+async def run(private_key: str) -> None:
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
     print(f"{Fore.GREEN}│ {'IZUMI SWAP - MONAD TESTNET':^56} │{Style.RESET_ALL}")
     print(f"{Fore.GREEN}{'═' * 60}{Style.RESET_ALL}")
 
-    private_keys = load_private_keys('pvkey.txt')
-    if not private_keys:
-        return
+    wallet = w3.eth.account.from_key(private_key).address[:8] + "..."
+    print_border(f"ACCOUNT 1 | {wallet}", Fore.CYAN)
 
-    print(f"{Fore.CYAN}👥 Accounts: {len(private_keys)}{Style.RESET_ALL}")
+    amount = get_random_amount()
+    await wrap_mon(private_key, amount)
+    await asyncio.sleep(5)
+    await unwrap_mon(private_key, amount)
 
-    while True:
-        try:
-            print_border("NUMBER OF CYCLES", Fore.YELLOW)
-            cycles_input = input(f"{Fore.GREEN}➤ Enter number (default 1): {Style.RESET_ALL}")
-            cycles = int(cycles_input) if cycles_input.strip() else 1
-            if cycles <= 0:
-                raise ValueError
-            break
-        except ValueError:
-            print(f"{Fore.RED}❌ Please enter a valid number!{Style.RESET_ALL}")
 
-    print(f"{Fore.YELLOW}🚀 Running {cycles} swap cycles immediately for {len(private_keys)} accounts...{Style.RESET_ALL}")
-    await run_swap_cycle(cycles, private_keys)
+
+
+
 
 if __name__ == "__main__":
-    asyncio.run(run())
+    asyncio.run(run(""))
